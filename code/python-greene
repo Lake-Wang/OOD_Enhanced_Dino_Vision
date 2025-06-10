@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#################################
+##### SETUP THESE VARIABLES #####
+#################################
+export PYTHON_GREENE_SIF="/scratch/work/public/singularity/cuda12.1.1-cudnn8.9.0-devel-ubuntu22.04.2.sif"
+export PYTHON_GREENE_OVERLAYS="/scratch/zs1512/overlay-25GB-500K.ext3:rw" ### PUT YOUR DATA OVERLAYS HERE, TOO ###
+export PYTHON_GREENE_ENV_START="/ext3/env.sh"
+export PYTHON_GREENE_CONDA_ENV="base"
+#################################
+#################################
+
+export PYTHON_GREENE=$(readlink -f $0)
+export SUBMITTED_COMMAND="$(readlink -f $0) $@"
+
+# https://stackoverflow.com/questions/1668649/how-to-keep-quotes-in-bash-arguments
+args=''
+for i in "$@"; do
+    i="${i//\\/\\\\}"
+    args="$args \"${i//\"/\\\"}\""
+done
+
+# Adds singularity to path
+export PATH=/share/apps/singularity/bin:$PATH
+# source /scratch/work/public/singularity/greene-ib-slurm-bind.sh
+
+if [ "$SOURCED" == "" ]; then
+    source /scratch/work/public/singularity/greene-ib-slurm-bind.sh
+    export SOURCED=1
+fi
+
+# sets singularity support for nvidia/gpus
+nv=""
+if [[ -e /dev/nvidia0 ]]; then nv="--nv"; fi
+
+export MYPYTHON=$WORKER_SCRIPT
+
+singularity exec $nv \
+            --overlay $PYTHON_GREENE_OVERLAYS \
+            $PYTHON_GREENE_SIF \
+            /bin/bash -c "
+source $PYTHON_GREENE_ENV_START
+source activate $PYTHON_GREENE_CONDA_ENV
+\$(/usr/bin/which python) $args
+exit
+"
