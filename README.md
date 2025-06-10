@@ -21,7 +21,7 @@ Conventional SSL models (e.g., SimCLR, DINO) perform poorly on long-tailed distr
 4. **Self-Supervised Training**: Augmented batches include rare samples for DINO training.
 
 <p align="center">
-  <img src="flow_chart.png" alt="OOD + SSL Pipeline" width="600"/>
+  <img src="flow_chart.png" alt="OOD + SSL Pipeline" width="100%"/>
 </p>
 
 ## 📊 Experimental Setup
